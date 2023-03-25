@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import { createClient } from '@supabase/supabase-js';
 import { useEffect} from 'react';
@@ -22,7 +21,7 @@ const supabase = createClient('https://ymgwygmadbpzlefijsnm.supabase.co', 'eyJhb
 
 export function SignInWithGithubButton() {
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
+    const { _ } = supabase.auth.onAuthStateChange(
       (event, session) => {
         // Handle session updates
         console.log(event, session)
@@ -31,7 +30,7 @@ export function SignInWithGithubButton() {
   }, [])
 
   const signInWithGithub = async () => {
-    const { user, error } = await supabase.auth.signIn({
+    const { _, error } = await supabase.auth.signIn({
       provider: 'github'
     })
 
