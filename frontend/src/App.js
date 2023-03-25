@@ -1,5 +1,8 @@
 import logo from './logo.svg';
 import './App.css';
+import { createClient } from '@supabase/supabase-js';
+import { useEffect} from 'react';
+
 
 function App() {
   return (
@@ -9,7 +12,7 @@ function App() {
           Auto dev environments
           
         </h1>
-
+        <SignInWithGithubButton />
       </header>
     </div>
   );
@@ -25,11 +28,6 @@ export function SignInWithGithubButton() {
         console.log(event, session)
       }
     )
-
-    // Cleanup auth listener
-    return () => {
-      authListener.unsubscribe()
-    }
   }, [])
 
   const signInWithGithub = async () => {
