@@ -1,29 +1,34 @@
 import './App.css';
 import { createClient } from '@supabase/supabase-js';
-import { useEffect} from 'react';
+import { useEffect, useState } from 'react';
 
+const supabase = createClient('https://ymgwygmadbpzlefijsnm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZ3d5Z21hZGJwemxlZmlqc25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Nzk3ODE0MjMsImV4cCI6MTk5NTM1NzQyM30.EyODb2ILaFfWg5UnxHFM6GpZtQHcUqoTi8SpRuz-6nM')
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
         <h1>
           Auto dev environments
           
         </h1>
-        <SignInWithGithubButton />
-      </header>
+        <Github />
     </div>
   );
 }
 
-const supabase = createClient('https://ymgwygmadbpzlefijsnm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZ3d5Z21hZGJwemxlZmlqc25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Nzk3ODE0MjMsImV4cCI6MTk5NTM1NzQyM30.EyODb2ILaFfWg5UnxHFM6GpZtQHcUqoTi8SpRuz-6nM')
 
-export function SignInWithGithubButton() {
+export function Github() {
+  const { isLoggedIn, setLoggedIn } =  useState(null);
   useEffect(() => {
      supabase.auth.onAuthStateChange(
       (event, session) => {
         // Handle session updates
+        if (event === 'SIGNED_IN') {
+          console.log('signed in')
+        }
+        if (session !== null) {
+          setLoggedIn(session)
+        }
         console.log(event, session)
       }
     )
@@ -41,11 +46,49 @@ export function SignInWithGithubButton() {
     }
   }
 
+
+  if (isLoggedIn) {
+    return (
+      <SetGithubUrl />
+    );
+    
+
+  } else {
+    return (
+      <button onClick={signInWithGithub}>
+        Sign in with GitHub
+      </button>
+    )
+  }
+}
+
+export function SetGithubUrl() {
+  const { githubRepoUrl, setGithubRepoUrl } = useState(null);
+
+
   return (
-    <button onClick={signInWithGithub}>
-      Sign in with GitHub
+    <div>
+      <input type="text" value={githubRepoUrl} onChange={e => setGithubRepoUrl(e.target.value)} />
+      <button  />
+    </div>
+  )
+
+}
+
+export function SignOut() {
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      console.log('Error signing out:', error.message)
+    }
+  }
+
+  return (
+    <button onClick={signOut}>
+      Sign out
     </button>
   )
-}
+} 
 
 export default App;
