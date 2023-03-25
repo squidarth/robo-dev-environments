@@ -21,7 +21,7 @@ const supabase = createClient('https://ymgwygmadbpzlefijsnm.supabase.co', 'eyJhb
 
 export function SignInWithGithubButton() {
   useEffect(() => {
-    const { _ } = supabase.auth.onAuthStateChange(
+     supabase.auth.onAuthStateChange(
       (event, session) => {
         // Handle session updates
         console.log(event, session)
@@ -30,9 +30,11 @@ export function SignInWithGithubButton() {
   }, [])
 
   const signInWithGithub = async () => {
-    const { _, error } = await supabase.auth.signIn({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'github'
     })
+
+    console.log(data);
 
     if (error) {
       console.log('Error signing in with GitHub:', error.message)
