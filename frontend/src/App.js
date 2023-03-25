@@ -1,6 +1,18 @@
 import './App.css';
 import { createClient } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+
+
+const isDevelopment = true;
+
+var backendUrl = "";
+
+if (isDevelopment) {
+  backendUrl = "http://localhost:5000"
+}
+
 
 const supabase = createClient('https://ymgwygmadbpzlefijsnm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZ3d5Z21hZGJwemxlZmlqc25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Nzk3ODE0MjMsImV4cCI6MTk5NTM1NzQyM30.EyODb2ILaFfWg5UnxHFM6GpZtQHcUqoTi8SpRuz-6nM')
 
@@ -18,7 +30,7 @@ function App() {
 
 
 export function Github() {
-  const [ isLoggedIn, setLoggedIn ] =  useState(null);
+  const [ sessionData, setLoggedIn ] =  useState(null);
   useEffect(() => {
      supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -32,7 +44,7 @@ export function Github() {
         console.log(event, session)
       }
     )
-  }, [])
+  }, [setLoggedIn])
 
   const signInWithGithub = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -47,10 +59,10 @@ export function Github() {
   }
 
 
-  if (isLoggedIn) {
+  if (sessionData) {
     return (
       <div>
-        <SetGithubUrl />
+        <SetGithubUrl accessToken={sessionData.accessToken} email={sessionData.user.email} />
         <SignOut />
       </div>
     );
@@ -65,16 +77,34 @@ export function Github() {
   }
 }
 
-function SetGithubUrl() {
+function SetGithubUrl(props) {
   const [ githubRepoUrl, setGithubRepoUrl ] = useState(null);
+  const [ triggeredGithubUrl, setTriggeredGithubUrl ] = useState(null);
+
+  function createDevEnvironment(githubRepoUrl) {
+    axios.post(backendUrl + "/create-dev-environment", {"githubRepoUrl": githubRepoUrl, "githubAccessToken": props.accessToken, "email": props.email }).then((response) => {
+      setTriggeredGithubUrl(githubRepoUrl);
+    })
+  }
+
+  var triggeredGithubUrlText = null;
+
+  if (triggeredGithubUrl) {
+    triggeredGithubUrlText = (
+      <p>
+        Setting up dev environment for {triggeredGithubUrl}
+      </p>
+    )
+  }
 
 
   return (
     <div>
       <input type="text" placeholder='github repo url' value={githubRepoUrl} onChange={e => setGithubRepoUrl(e.target.value)} />
-      <button>
+      <button onClick={() => createDevEnvironment(githubRepoUrl)}>
         Set Github URL
       </button>
+      {triggeredGithubUrlText}
     </div>
   )
 }
