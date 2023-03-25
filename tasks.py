@@ -7,6 +7,12 @@ logger = get_task_logger(__name__)
 
 
 @app.task
+def create_development_environment(github_repo_url, github_access_token, user_email):
+    logger.info('Creating development environment')
+    return 'Development environment created'
+
+
+@app.task
 def add(x, y):
     logger.info(f'Adding {x} + {y}')
     return x + y
