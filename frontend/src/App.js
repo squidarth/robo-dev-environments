@@ -18,7 +18,7 @@ function App() {
 
 
 export function Github() {
-  const { isLoggedIn, setLoggedIn } =  useState(null);
+  const [ isLoggedIn, setLoggedIn ] =  useState(null);
   useEffect(() => {
      supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -65,20 +65,23 @@ export function Github() {
   }
 }
 
-export function SetGithubUrl() {
-  const { githubRepoUrl, setGithubRepoUrl } = useState(null);
+function SetGithubUrl() {
+  const [ githubRepoUrl, setGithubRepoUrl ] = useState(null);
 
 
   return (
     <div>
-      <input type="text" value={githubRepoUrl} onChange={e => setGithubRepoUrl(e.target.value)} />
-      <button  />
+      <input type="text" placeholder='github repo url' value={githubRepoUrl} onChange={e => setGithubRepoUrl(e.target.value)} />
+      <button>
+        Set Github URL
+      </button>
     </div>
   )
-
 }
 
-export function SignOut() {
+
+
+function SignOut() {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
 
@@ -88,9 +91,12 @@ export function SignOut() {
   }
 
   return (
-    <button onClick={signOut}>
-      Sign out
-    </button>
+    <p>
+      <button onClick={signOut}>
+        Sign out
+      </button>
+    </p>
+
   )
 } 
 
