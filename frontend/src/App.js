@@ -49,7 +49,10 @@ export function Github() {
 
   if (isLoggedIn) {
     return (
-      <SetGithubUrl />
+      <div>
+        <SetGithubUrl />
+        <SignOut />
+      </div>
     );
     
 
