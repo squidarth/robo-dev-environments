@@ -32,3 +32,4 @@ Werkzeug==2.1.1
 wrapt==1.14.0
 zipp==3.8.0
 openai==0.27.2
+Flask-Cors==3.0.10
