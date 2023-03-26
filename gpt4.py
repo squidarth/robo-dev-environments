@@ -1,9 +1,15 @@
 import openai
+import re
 
 def authenticate_openai(api_key):
     openai.api_key = api_key
 
-def generate_text(prompt, model='gpt-4'):
+def extract_code_blocks(text):
+    code_blocks = re.findall(r'```([\s\S]*?)```', text)
+    code_blocks = [code_block.strip() for code_block in code_blocks]
+    return code_blocks
+
+def get_code_block_openai(prompt, model='gpt-4'):
     # Ensure the user is authenticated
     if not openai.api_key:
         raise ValueError("OpenAI API key not set. Please authenticate using 'authenticate_openai(api_key)' function.")
@@ -34,7 +40,7 @@ def generate_text(prompt, model='gpt-4'):
         # Extract the generated text
         generated_text = response.choices[0].text.strip()
         print("Generated text successfully received.")
-        return generated_text
+        return extract_code_blocks(generated_text)
 
     except openai.error.APIError as api_error:
         print(f"API error: {api_error}")
@@ -42,3 +48,4 @@ def generate_text(prompt, model='gpt-4'):
     except Exception as e:
         print(f"Unexpected error: {e}")
         return None
+
