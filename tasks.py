@@ -1,6 +1,7 @@
 import os
 from celery import Celery
 from celery.utils.log import get_task_logger
+import postmark
 
 from gpt4 import authenticate_openai
 
@@ -8,6 +9,19 @@ app = Celery('tasks', broker=os.getenv("CELERY_BROKER_URL"))
 logger = get_task_logger(__name__)
 
 authenticate_openai(os.environ['OPENAI_API_KEY'])
+
+postmark_api_key = os.environ["POSTMARK_API_KEY"]
+client = postmark.Client(api_token=postmark_api_key)
+
+def send_postmark_email(email, github_url):
+    message = postmark.Message(
+        sender='sender@example.com',
+        to=email,
+        subject='Your development environment is ready!',
+        text_body=f"Your codespace is ready! You can access it here: {github_url}"
+    )
+
+    client.send(message)
 
 @app.task
 def create_development_environment(github_repo_url, github_access_token, user_email):

@@ -22,6 +22,10 @@ function App() {
           Auto dev environments
           
         </h1>
+
+        <p>
+          Just type in a Github  URL, and get a working development environment back!
+        </p>
         <Github />
     </div>
   );
@@ -94,7 +98,7 @@ function SetGithubUrl(props) {
   if (triggeredGithubUrl) {
     triggeredGithubUrlText = (
       <p>
-        Setting up dev environment for {triggeredGithubUrl}
+        Setting up dev environment for {triggeredGithubUrl}! You'll get an email when this completes.
       </p>
     )
   }
