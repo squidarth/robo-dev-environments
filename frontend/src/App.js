@@ -5,12 +5,12 @@ import axios from 'axios';
 
 
 
-const isDevelopment = true;
+const isDevelopment = false;
 
 var backendUrl = "";
 
 if (isDevelopment) {
-  backendUrl = "http://localhost:5000"
+  backendUrl = "http://localhost:4000"
 }
 
 
@@ -62,7 +62,7 @@ export function Github() {
   if (sessionData) {
     return (
       <div>
-        <SetGithubUrl accessToken={sessionData.accessToken} email={sessionData.user.email} />
+        <SetGithubUrl accessToken={sessionData.access_token} email={sessionData.user.email} />
         <SignOut />
       </div>
     );
