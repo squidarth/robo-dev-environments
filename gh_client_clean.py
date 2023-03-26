@@ -287,7 +287,7 @@ def create_codespace_with_files(username, access_token, repo_url, docker_file, d
 
 
 docker_file = '''# Use the official Python base image
-    FROM python:3.9-slim
+    FROM ubuntu
 
     # Set the working directory
     WORKDIR /app
