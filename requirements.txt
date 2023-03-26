@@ -31,3 +31,4 @@ wcwidth==0.2.5
 Werkzeug==2.1.1
 wrapt==1.14.0
 zipp==3.8.0
+openai==0.27.2
