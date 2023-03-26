@@ -49,7 +49,7 @@ def create_new_branch(username, repo_name, new_branch_name, headers):
         print("Status code:", response.status_code)
         print("Error message:", response.json())
 
-
+'''
 def commit_files_to_branch(username, repo_name, branch_name, devcontainer_json, docker_file, sample_script, headers):
     # Encode file contents as Base64
     devcontainer_json_content = base64.b64encode(devcontainer_json.encode('utf-8')).decode('utf-8')
@@ -93,34 +93,147 @@ def commit_files_to_branch(username, repo_name, branch_name, devcontainer_json, 
     }
     requests.post(f'{api_base_url}/git/refs', headers=headers, json=new_branch_data)
 
+'''
 
-def create_codespace(username, repo_name, branch_name, headers):
-    api_base_url = f'https://api.github.com'
+def commit_files_to_branch(repo_owner, repo_name, new_branch_name, 
+devcontainer_json_content, dockerfile_content, sample_script_content, headers):
+    import requests
+    import json
+    import base64
 
-    # Set up the Codespace creation request
-    codespace_data = {
-        'repository': f'{username}/{repo_name}',
-        'branch': branch_name
+
+    api_base_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}'
+
+    # Get default branch and its commit SHA
+    repo_info = requests.get(api_base_url, headers=headers).json()
+    default_branch = repo_info['default_branch']
+    default_branch_sha = requests.get(f'{api_base_url}/git/ref/heads/{default_branch}', headers=headers).json()['object']['sha']
+
+
+    devcontainer_json_blob_sha = requests.post(f'{api_base_url}/git/blobs', headers=headers, json={
+        'content': base64.b64encode(devcontainer_json_content.encode()).decode(),
+        'encoding': 'base64'
+    }).json()['sha']
+
+    dockerfile_blob_sha = requests.post(f'{api_base_url}/git/blobs', headers=headers, json={
+        'content': base64.b64encode(dockerfile_content.encode()).decode(),
+        'encoding': 'base64'
+    }).json()['sha']
+
+    sample_script_blob_sha = requests.post(f'{api_base_url}/git/blobs', headers=headers, json={
+        'content': base64.b64encode(sample_script_content.encode()).decode(),
+        'encoding': 'base64'
+    }).json()['sha']
+
+    # Get latest commit tree
+    latest_commit_tree_sha = requests.get(f'{api_base_url}/git/commits/{default_branch_sha}', headers=headers).json()['tree']['sha']
+    print("Latest commit tree SHA:", latest_commit_tree_sha)
+
+    # Create a new tree with the new blobs
+    new_tree_response = requests.post(f'{api_base_url}/git/trees', headers=headers, json={
+        'base_tree': latest_commit_tree_sha,
+        'tree': [
+            {
+                'path': '.devcontainer/devcontainer.json',
+                'mode': '100644',
+                'type': 'blob',
+                'sha': devcontainer_json_blob_sha
+            },
+            {
+                'path': 'Dockerfile',
+                'mode': '100644',
+                'type': 'blob',
+                'sha': dockerfile_blob_sha
+            },
+            {
+                'path': 'sample_script.py',
+                'mode': '100644',
+                'type': 'blob',
+                'sha': sample_script_blob_sha
+            }
+
+        ]
+    })
+
+    if new_tree_response.status_code == 201:
+        new_tree = new_tree_response.json()
+        print("New tree created successfully.")
+        print("New tree SHA:", new_tree['sha'])
+    else:
+        print("Error creating the new tree.")
+        print("Status code:", new_tree_response.status_code)
+        print("Error message:", new_tree_response.json())
+        exit(1)
+
+    # Create a new commit with the new tree
+    new_commit_response = requests.post(f'{api_base_url}/git/commits', headers=headers, json={
+        'message': 'Add devcontainer.json and Dockerfile',
+        'tree': new_tree['sha'],
+        'parents': [default_branch_sha]
+    })
+
+    if new_commit_response.status_code == 201:
+        new_commit = new_commit_response.json()
+        print("New commit created successfully.")
+        print("New commit SHA:", new_commit['sha'])
+    else:
+        print("Error creating the new commit.")
+        print("Status code:", new_commit_response.status_code)
+        print("Error message:", new_commit_response.json())
+        exit(1)
+
+    # Create new branch on the forked repository with the new commit SHA
+    new_branch_ref = f'refs/heads/{new_branch_name}'
+    create_branch_response = requests.post(f'{api_base_url}/git/refs', headers=headers, json={
+        'ref': new_branch_ref,
+        'sha': new_commit['sha']
+    })
+
+    if create_branch_response.status_code == 201:
+        print(f"New branch '{new_branch_name}' created successfully on the forked repository with devcontainer.json and Dockerfile.")
+    else:
+        print("Error creating the new branch on the forked repository.")
+        print("Status code:", create_branch_response.status_code)
+        print("Error message:", create_branch_response.json())
+        exit(1)
+
+
+def create_codespace(repo_owner, repo_name, new_branch_name, headers):
+    import requests
+    import time
+
+    api_base_url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/codespaces'
+
+    create_codespace_payload = {
+        'ref': new_branch_name
     }
 
-    # Send the Codespace creation request
-    codespace_response = requests.post(f'{api_base_url}/user/codespaces', headers=headers, json=codespace_data)
+    create_codespace_response = requests.post(api_base_url, headers=headers, json=create_codespace_payload)
 
-    if codespace_response.status_code == 201:
+    if create_codespace_response.status_code == 201:
         print("Codespace creation request is successful. Waiting for the Codespace to be created...")
-        codespace_id = codespace_response.json()['id']
+        codespace = create_codespace_response.json()
+
+        # Poll the Codespace's status until it becomes 'available'
+        codespace_id = codespace['id']
+        print(codespace_id)
+        print(codespace)
+        codespace_status = codespace['status']
+
+        while codespace_status != 'available':
+            time.sleep(10)
+            codespace_response = requests.get(f'{api_base_url}/{codespace_id}', headers=headers)
+            codespace = codespace_response.json()
+            print(codespace)
+            codespace_status = codespace['status']
+            print(f"Current Codespace status: {codespace_status}")
+
+        print(f"Codespace is available! ID: {codespace_id}")
     else:
-        raise Exception(f"Error creating Codespace: {codespace_response.status_code} - {codespace_response.json()['message']}")
+        print("Error creating the Codespace.")
+        print("Status code:", create_codespace_response.status_code)
+        print("Error message:", create_codespace_response.json())
 
-    # Poll the Codespace status until it is ready
-    codespace_status = 'creating'
-    while codespace_status != 'ready':
-        time.sleep(5)
-        codespace_status_response = requests.get(f'{api_base_url}/codespaces/{codespace_id}', headers=headers)
-        codespace_status = codespace_status_response.json()['state']
-
-    print(f"Codespace is ready. ID: {codespace_id}")
-    return codespace_id
 
 
 def create_codespace_with_files(username, access_token, repo_url, docker_file, devcontainer_json, sample_script):
@@ -220,5 +333,4 @@ print("Video processing completed. The output video is saved as output_video.mp4
 username = 'sdk21'
 access_token = os.environ.get('GH_TOKEN')
 repo_url = 'https://github.com/kkroening/ffmpeg-python'
-
 create_codespace_with_files(username, access_token, repo_url, docker_file, devcontainer_json, sample_script)
