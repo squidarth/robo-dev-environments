@@ -3,7 +3,7 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 import postmark
 
-from gpt4 import authenticate_openai
+from gpt import authenticate_openai, get_code_block_openai
 
 app = Celery('tasks', broker=os.getenv("CELERY_BROKER_URL"))
 logger = get_task_logger(__name__)
