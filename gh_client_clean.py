@@ -6,6 +6,7 @@ from github import Github
 import random
 
 def repo_exists(access_token, repo_name):
+
     gh = Github(access_token)
     for repo in gh.get_user().get_repos():
         if repo.name == repo_name:
@@ -118,11 +119,8 @@ devcontainer_json_content, dockerfile_content, sample_script_content, headers):
     repo_info = requests.get(api_base_url, headers=headers).json()
     print(repo_info)
     default_branch = repo_info['default_branch']
-    default_branch_sha = requests.get(f'{api_base_url}/git/ref/heads/{default_branch}', headers=headers).json()['object']['sha']
+    default_branch_sha = requests.get(f'{api_base_url}/git/ref/heads/master', headers=headers).json()['object']['sha']
     #object = requests.get(f'{api_base_url}/git/ref/heads/{default_branch}', headers=headers).json()
-
-    #import ipdb
-    #ipdb.set_trace()
 
 
     devcontainer_json_blob_sha = requests.post(f'{api_base_url}/git/blobs', headers=headers, json={
@@ -155,7 +153,7 @@ devcontainer_json_content, dockerfile_content, sample_script_content, headers):
                 'sha': devcontainer_json_blob_sha
             },
             {
-                'path': 'Dockerfile',
+                'path': '.devcontainer/Dockerfile',
                 'mode': '100644',
                 'type': 'blob',
                 'sha': dockerfile_blob_sha
@@ -351,6 +349,6 @@ print("Video processing completed. The output video is saved as output_video.mp4
 '''
 
 username = 'sdk21'
-access_token = os.environ.get('GH_TOKEN')
-repo_url = 'https://github.com/kkroening/ffmpeg-python'
-create_codespace_with_files(username, access_token, repo_url, docker_file, devcontainer_json, sample_script)
+# access_token = os.environ.get('GH_TOKEN')
+#repo_url = 'https://github.com/kkroening/ffmpeg-python'
+#create_codespace_with_files(username, access_token, repo_url, docker_file, devcontainer_json, sample_script)

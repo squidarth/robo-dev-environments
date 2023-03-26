@@ -51,13 +51,10 @@ def create_development_environment(github_repo_url, github_access_token, user_em
 #    sample_script_string = get_code_block_openai(prompt_sample_script)
 
     # Folk a repo and create codespace on top of that
-    import ipdb
-    ipdb.set_trace()
-
 #    print(sample_script_string)
 
     # Add a function to send an email
-    create_codespace_with_files("squidarth", github_access_token, github_repo_url, docker_file, devcontainer_json, sample_script)
+    create_codespace_with_files("squidarth", os.environ["GH_ACCESS_TOKEN"], github_repo_url, docker_file, devcontainer_json, sample_script)
     return 'Development environment created'
 
 
