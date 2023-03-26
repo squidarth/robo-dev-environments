@@ -26,7 +26,7 @@ def extract_code_blocks(text):
     code_blocks = [code_block.strip() for code_block in code_blocks]
     return code_blocks
 
-def get_code_block_openai(prompt, model='gpt-3.5-turbo'):
+def get_code_block_openai(prompt, model='gpt-3.5-turbo-0301'):
     # Ensure the user is authenticated
     if not openai.api_key:
         raise ValueError("OpenAI API key not set. Please authenticate using 'authenticate_openai(api_key)' function.")
@@ -78,5 +78,5 @@ def get_code_block_openai(prompt, model='gpt-3.5-turbo'):
 
 if __name__ == '__main__':
     authenticate_openai(os.environ['OPENAI_API_TOKEN'])
-    # print(list_openai_engines())
+    print(list_openai_engines())
     print(get_code_block_openai('Generate a sample python code that adds two numbers'))
