@@ -31,7 +31,7 @@ def create_development_environment(github_repo_url, github_access_token, user_em
     # Get dockerfile
 #    prompt_dockerfile = f'''
 #        Here is the repo url: {github_repo_url}.
-#        Based on contents of its README, generate a docker file with the library in that repo installed
+#        Based on contents of its README, generate an alpine based docker file with the library in that repo installed
 #        '''
 #    dockerfile_string = get_code_block_openai(prompt_dockerfile)
 #
