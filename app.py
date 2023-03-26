@@ -5,6 +5,8 @@ from flask_cors import CORS, cross_origin
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
 CORS(app)
 
+authenticate_openai(os.environ['OPENAI_API_KEY'])
+
 @app.route("/")
 def index():
     return send_from_directory(app.static_folder,'index.html')
