@@ -9,6 +9,9 @@ logger = get_task_logger(__name__)
 @app.task
 def create_development_environment(github_repo_url, github_access_token, user_email):
     logger.info('Creating development environment')
+
+
+    # Add a function to send an email
     return 'Development environment created'
 
 
