@@ -13,7 +13,6 @@ if (isDevelopment) {
   backendUrl = "http://localhost:4000"
 }
 
-
 const supabase = createClient('https://ymgwygmadbpzlefijsnm.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltZ3d5Z21hZGJwemxlZmlqc25tIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Nzk3ODE0MjMsImV4cCI6MTk5NTM1NzQyM30.EyODb2ILaFfWg5UnxHFM6GpZtQHcUqoTi8SpRuz-6nM')
 
 function App() {
@@ -48,7 +47,10 @@ export function Github() {
 
   const signInWithGithub = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'github'
+      provider: 'github',
+      options: {
+        scopes: "codespace,repo",
+      }
     })
 
     console.log(data);
