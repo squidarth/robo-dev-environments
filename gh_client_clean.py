@@ -2,6 +2,16 @@ import requests
 import time
 import base64
 import os
+from github import Github
+import random
+
+def repo_exists(access_token, repo_name):
+    gh = Github(access_token)
+    for repo in gh.get_user().get_repos():
+        if repo.name == repo_name:
+            print("Repo exists!!")
+            return True
+    return False
 
 
 def fork_repository(username, repo_owner, repo_name, headers):
@@ -106,8 +116,13 @@ devcontainer_json_content, dockerfile_content, sample_script_content, headers):
 
     # Get default branch and its commit SHA
     repo_info = requests.get(api_base_url, headers=headers).json()
+    print(repo_info)
     default_branch = repo_info['default_branch']
     default_branch_sha = requests.get(f'{api_base_url}/git/ref/heads/{default_branch}', headers=headers).json()['object']['sha']
+    #object = requests.get(f'{api_base_url}/git/ref/heads/{default_branch}', headers=headers).json()
+
+    #import ipdb
+    #ipdb.set_trace()
 
 
     devcontainer_json_blob_sha = requests.post(f'{api_base_url}/git/blobs', headers=headers, json={
@@ -218,22 +233,26 @@ def create_codespace(repo_owner, repo_name, new_branch_name, headers):
         codespace_id = codespace['id']
         print(codespace_id)
         print(codespace)
-        codespace_status = codespace['status']
-
-        while codespace_status != 'available':
+        
+        codespace_status = codespace['state']
+        print(codespace_status)
+        return codespace_id
+        '''
+        while codespace_status != 'Available':
             time.sleep(10)
             codespace_response = requests.get(f'{api_base_url}/{codespace_id}', headers=headers)
             codespace = codespace_response.json()
-            print(codespace)
-            codespace_status = codespace['status']
+            import ipdb
+            ipdb.set_trace()
+            codespace_status = codespace['state']
             print(f"Current Codespace status: {codespace_status}")
 
         print(f"Codespace is available! ID: {codespace_id}")
+        '''
     else:
         print("Error creating the Codespace.")
         print("Status code:", create_codespace_response.status_code)
         print("Error message:", create_codespace_response.json())
-
 
 
 def create_codespace_with_files(username, access_token, repo_url, docker_file, devcontainer_json, sample_script):
@@ -249,12 +268,14 @@ def create_codespace_with_files(username, access_token, repo_url, docker_file, d
         'Content-Type': 'application/json'
     }
 
-    # Fork the repository
-    forked_repo = fork_repository(username, repo_owner, repo_name, headers)
-    print("Forked!")
+    if not repo_exists(access_token, repo_name):
+        # Fork the repository
+        forked_repo = fork_repository(username, repo_owner, repo_name, headers)
+        print("Forked!")
+
 
     # Create a new branch in the forked repository
-    new_branch_name = 'devcontainer-setup'
+    new_branch_name = 'devcontainer-setup-'+str(random.randint(1,1000))
     #create_new_branch(username, repo_name, new_branch_name, headers)
 
     # Commit devcontainer.json, Dockerfile, and sample_script to the new branch
@@ -263,7 +284,6 @@ def create_codespace_with_files(username, access_token, repo_url, docker_file, d
 
     # Create a new Codespace using the new branch
     codespace_id = create_codespace(username, repo_name, new_branch_name, headers)
-    print(codespace_id)
     
     return codespace_id
 
