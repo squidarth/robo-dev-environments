@@ -1,7 +1,6 @@
 import os
 from celery import Celery
 from celery.utils.log import get_task_logger
-import postmark
 
 from gpt import authenticate_openai, get_code_block_openai
 
@@ -11,17 +10,17 @@ logger = get_task_logger(__name__)
 authenticate_openai(os.environ['OPENAI_API_KEY'])
 
 postmark_api_key = os.environ["POSTMARK_API_KEY"]
-client = postmark.Client(api_token=postmark_api_key)
+#client = postmark.Client(api_token=postmark_api_key)
 
-def send_postmark_email(email, github_url):
-    message = postmark.Message(
-        sender='sender@example.com',
-        to=email,
-        subject='Your development environment is ready!',
-        text_body=f"Your codespace is ready! You can access it here: {github_url}"
-    )
-
-    client.send(message)
+#def send_postmark_email(email, github_url):
+#    message = postmark.Message(
+#        sender='sender@example.com',
+#        to=email,
+#        subject='Your development environment is ready!',
+#        text_body=f"Your codespace is ready! You can access it here: {github_url}"
+#    )
+#
+#    client.send(message)
 
 @app.task
 def create_development_environment(github_repo_url, github_access_token, user_email):
@@ -41,15 +40,19 @@ def create_development_environment(github_repo_url, github_access_token, user_em
         https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/setting-up-your-python-project-for-codespaces.
         Generate a devcontainer.json that uses the dockerfile you just generated
         '''
-    devcontainer_string = get_code_block_openai(prompt_dockerfile)
+    devcontainer_string = get_code_block_openai(prompt_devcontainer)
 
     # Get sample script
     prompt_sample_script = f'''
         Using the repo you are working with, generate a cool python script that can be run inside the docker container you first generated using files accessible on the internet. 
         '''
-    sample_script_string = get_code_block_openai(devcontainer_string)
+    sample_script_string = get_code_block_openai(prompt_sample_script)
 
     # Folk a repo and create codespace on top of that
+    import ipdb
+    ipdb.set_trace()
+
+    print(sample_script_string)
 
     # Add a function to send an email
     return 'Development environment created'

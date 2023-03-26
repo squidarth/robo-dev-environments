@@ -55,9 +55,18 @@ def get_code_block_openai(prompt, model='gpt-3.5-turbo'):
             return None
 
         # Extract the generated text
+#        import ipdb
+#        ipdb.set_trace()
+        print(response)
+        print(response.choices[0].message.content)
         generated_text = response.choices[0].message.content.strip()
         print("Generated text successfully received.")
-        return extract_code_blocks(generated_text)[0]
+
+        code_blocks = extract_code_blocks(generated_text)
+        if len(code_blocks) > 0:
+            return code_blocks[0]
+        else:
+            return generated_text
 
     except openai.error.APIError as api_error:
         print(f"API error: {api_error}")
